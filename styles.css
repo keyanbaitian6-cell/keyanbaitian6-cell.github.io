@@ -149,12 +149,14 @@ button, input, textarea { font: inherit; }
 .coverage-heading { display: grid; grid-template-columns: 1fr 1fr; align-items: end; gap: 34px; margin-bottom: 24px; }
 .coverage-heading h3 { margin: 6px 0 0; font-size: clamp(25px, 3vw, 36px); }
 .coverage-heading > p { margin: 0; color: #c5d4eb; font-size: 14px; }
-.coverage-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .coverage-group { padding: 24px; color: var(--ink); background: #fff; border-radius: 20px; }
 .coverage-group h4 { margin: 0 0 6px; font-size: 19px; }
 .coverage-group > p { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
 .coverage-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .coverage-tags li { padding: 7px 11px; color: #164a94; background: var(--blue-50); border: 1px solid #cfe1fb; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.coverage-warning { margin-top: 16px; padding: 18px 22px; color: #432a00; background: #fff3d6; border: 1px solid #ffd77a; border-radius: 18px; }
+.coverage-warning strong { font-size: 15px; }
+.coverage-warning p { margin: 6px 0 0; font-size: 13px; }
 .coverage-note { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
 .coverage-note > div { padding: 20px 22px; background: rgba(255, 255, 255, .08); border-radius: 18px; }
 .coverage-note strong { color: #fff; font-size: 15px; }
@@ -256,7 +258,7 @@ button, input, textarea { font: inherit; }
   .feature-symbol { margin-bottom: 26px; }
   .plans-grid { grid-template-columns: 1fr; }
   .coverage-panel { padding: 24px 18px; }
-  .coverage-heading, .coverage-columns, .coverage-note { grid-template-columns: 1fr; }
+  .coverage-heading, .coverage-note { grid-template-columns: 1fr; }
   .coverage-heading { align-items: start; gap: 12px; }
   .coverage-updated { text-align: left; }
   .cta-card { grid-template-columns: 1fr; padding: 32px; text-align: center; }

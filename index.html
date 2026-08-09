@@ -220,36 +220,33 @@
         <div class="coverage-panel" aria-labelledby="coverage-title">
           <div class="coverage-heading">
             <div><p class="section-kicker">CURRENT COVERAGE</p><h3 id="coverage-title">現在対応している交通事業者</h3></div>
-            <p>同じ事業者でも、公開されている時刻表の対象外となる路線があります。アプリの検索画面に表示される駅・バス停が現在の対象です。</p>
+            <p>以下の事業者はすべて、アプリ内の同じ事業者選択リストから選べます。同じ事業者でも、公開されている時刻表の対象外となる路線があります。</p>
           </div>
-          <div class="coverage-columns">
-            <div class="coverage-group">
-              <h4>アプリ内検索から追加</h4>
-              <p>停留所名を検索して、時刻表をかんたんに追加できます。</p>
-              <ul class="coverage-tags">
-                <li>仙台市交通局（バス）</li>
-                <li>横浜市交通局（バス・地下鉄）</li>
-                <li>東京都交通局（都営地下鉄・都電荒川線）</li>
-                <li>秋田市（マイタウン・バス、ぐるる）</li>
-                <li>青森市営バス</li>
-                <li>松江市交通局（市営バス・一畑バス）</li>
-                <li>名古屋市SRT</li>
-              </ul>
-            </div>
-            <div class="coverage-group">
-              <h4>公開時刻表を手動で追加</h4>
-              <p>事業者が公開している時刻表ファイルを読み込んで利用できます。</p>
-              <ul class="coverage-tags">
-                <li>北海道拓殖バス（一般路線）</li>
-                <li>京王バス</li>
-                <li>西武バス</li>
-                <li>関東バス</li>
-                <li>西東京バス</li>
-                <li>伊予鉄バス</li>
-                <li>伊豆箱根バス</li>
-                <li>京都バス</li>
-              </ul>
-            </div>
+          <div class="coverage-group">
+            <h4>アプリで選択できる事業者</h4>
+            <p>一覧にない事業者のみ、事業者IDの手入力が必要です。</p>
+            <ul class="coverage-tags">
+              <li>仙台市交通局（バス）</li>
+              <li>横浜市交通局（バス・地下鉄）</li>
+              <li>東京都交通局（都営地下鉄・都電荒川線）</li>
+              <li>秋田市（マイタウン・バス、ぐるる）</li>
+              <li>青森市営バス</li>
+              <li>松江市交通局（市営バス・一畑バス）</li>
+              <li>名古屋市SRT</li>
+              <li>函館市電</li>
+              <li>北海道拓殖バス（一般路線）</li>
+              <li>京王バス</li>
+              <li>西武バス</li>
+              <li>関東バス</li>
+              <li>西東京バス</li>
+              <li>伊予鉄バス</li>
+              <li>伊豆箱根バス</li>
+              <li>京都バス</li>
+            </ul>
+          </div>
+          <div class="coverage-warning">
+            <strong>函館市電について</strong>
+            <p>静的GTFSのダウンロードURLが404になる既知の問題があるため、①のGTFSインポートは現時点で利用できない可能性があります。</p>
           </div>
           <div class="coverage-note">
             <div><strong>一覧にない路線でも使えます</strong><p>「マイ時刻表」で場所・曜日・発車時刻を手入力すれば、公開時刻表がない駅やバス停も登録できます。</p></div>

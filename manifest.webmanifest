@@ -1,0 +1,11 @@
+{
+  "name": "イマクル公式サイト",
+  "short_name": "イマクル",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f9ff",
+  "theme_color": "#0759e8",
+  "icons": [
+    { "src": "assets/imakuru-icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

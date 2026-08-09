@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://keyanbaitian6-cell.github.io/sitemap.xml

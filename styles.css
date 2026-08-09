@@ -145,6 +145,21 @@ button, input, textarea { font: inherit; }
 .plan-card li { position: relative; padding-left: 28px; }
 .plan-card li::before { content: "✓"; position: absolute; left: 0; color: var(--blue-700); font-weight: 900; }
 .plan-badge { position: absolute; right: 24px; top: 24px; padding: 5px 11px; color: #fff; background: var(--orange); border-radius: 999px; font-size: 11px; font-weight: 900; }
+.coverage-panel { max-width: 1100px; margin: 24px auto 0; padding: 34px; background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .14); border-radius: 28px; }
+.coverage-heading { display: grid; grid-template-columns: 1fr 1fr; align-items: end; gap: 34px; margin-bottom: 24px; }
+.coverage-heading h3 { margin: 6px 0 0; font-size: clamp(25px, 3vw, 36px); }
+.coverage-heading > p { margin: 0; color: #c5d4eb; font-size: 14px; }
+.coverage-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.coverage-group { padding: 24px; color: var(--ink); background: #fff; border-radius: 20px; }
+.coverage-group h4 { margin: 0 0 6px; font-size: 19px; }
+.coverage-group > p { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
+.coverage-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.coverage-tags li { padding: 7px 11px; color: #164a94; background: var(--blue-50); border: 1px solid #cfe1fb; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.coverage-note { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+.coverage-note > div { padding: 20px 22px; background: rgba(255, 255, 255, .08); border-radius: 18px; }
+.coverage-note strong { color: #fff; font-size: 15px; }
+.coverage-note p { margin: 6px 0 0; color: #c5d4eb; font-size: 13px; }
+.coverage-updated { margin: 18px 0 0; color: #9eb6d8; font-size: 12px; text-align: right; }
 
 .faq-shell { display: grid; grid-template-columns: .75fr 1.25fr; gap: 70px; }
 .faq-heading { position: sticky; top: 120px; align-self: start; }
@@ -240,6 +255,10 @@ button, input, textarea { font: inherit; }
   .feature-card { min-height: 0; }
   .feature-symbol { margin-bottom: 26px; }
   .plans-grid { grid-template-columns: 1fr; }
+  .coverage-panel { padding: 24px 18px; }
+  .coverage-heading, .coverage-columns, .coverage-note { grid-template-columns: 1fr; }
+  .coverage-heading { align-items: start; gap: 12px; }
+  .coverage-updated { text-align: left; }
   .cta-card { grid-template-columns: 1fr; padding: 32px; text-align: center; }
   .cta-card img { width: 92px; margin-inline: auto; }
   .footer-grid, .footer-bottom { flex-direction: column; }

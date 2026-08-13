@@ -6,53 +6,53 @@
 </head>
 <body>
   <a class="skip-link" href="#main">本文へ移動</a>
-  <header class="site-header scrolled" data-header><div class="container nav-shell"><a class="brand" href="./"><img src="assets/imakuru-icon.png" alt="" width="42" height="42"><span>イマクル</span></a><button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" data-nav-toggle><span class="sr-only">メニューを開く</span><span></span><span></span><span></span></button><nav id="site-nav" class="site-nav" aria-label="メインナビゲーション" data-nav><a href="./#how">使い方</a><a href="./#features">特徴</a><a href="./#plans">プラン</a><a href="./#faq">FAQ</a><a class="nav-cta" href="support.html">サポート</a></nav></div></header>
+  <header class="site-header scrolled" data-header><div class="container nav-shell"><a class="brand" href="./"><img src="assets/imakuru-icon.png" alt="" width="42" height="42"><span>イマクル</span></a><button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" data-nav-toggle><span class="sr-only">メニューを開く</span><span></span><span></span><span></span></button><nav id="site-nav" class="site-nav" aria-label="メインナビゲーション" data-nav><a href="./#how">使い方</a><a href="./#features">特徴</a><a href="./#free">無料で使えること</a><a href="./#faq">FAQ</a><a class="nav-cta" href="support.html">サポート</a></nav></div></header>
   <main id="main">
     <section class="page-hero"><div class="container"><p class="section-kicker">PRIVACY POLICY</p><h1>プライバシーポリシー</h1><p>イマクルは、位置情報を扱うアプリとして、必要な情報とその利用目的を明確にお伝えします。</p></div></section>
     <div class="container document-layout">
       <nav class="document-nav" aria-label="ページ内目次"><strong>目次</strong><a href="#principle">1. 基本方針</a><a href="#data">2. 収集する情報</a><a href="#purpose">3. 利用目的</a><a href="#providers">4. 外部サービス</a><a href="#retention">5. 保存期間</a><a href="#children">6. お子様</a><a href="#rights">7. ユーザーの権利</a><a href="#security">8. セキュリティ</a><a href="#changes">9. 変更</a><a href="#contact">10. お問い合わせ</a></nav>
       <article class="document">
-        <div class="document-meta"><span>制定日：2026年8月1日</span><span>最終更新日：2026年8月9日</span><span>対象：イマクル / Imakuru</span></div>
+        <div class="document-meta"><span>制定日：2026年8月1日</span><span>最終更新日：2026年8月13日</span><span>対象：イマクル / Imakuru</span></div>
         <p>本ポリシーは、モバイルアプリケーション「イマクル」（以下「本アプリ」）における利用者情報の取り扱いについて定めるものです。本アプリをご利用いただくことで、本ポリシーの内容に同意いただいたものとみなします。</p>
         <div class="contact-card">運営者：イマクル運営<br>お問い合わせ先：<a href="mailto:keyanbaitian6@gmail.com">keyanbaitian6@gmail.com</a></div>
 
         <h2 id="principle">1. 本アプリの基本的な考え方</h2>
-        <p>本アプリは、登録した駅・バス停に近づき、かつ発車が間近に迫っている場合にのみ通知することを目的としたアプリです。バッテリー消費を抑えるため、位置情報の判定を端末内で行います。有料プランでは、リアルタイム遅延情報を取得するために必要最小限の公共交通識別情報のみをサーバーへ送信します。</p>
+        <p>本アプリは、登録した駅・バス停に近づき、かつ発車が間近に迫っている場合にのみ通知することを目的としています。位置情報の判定は端末内で行い、位置情報そのものをサーバーへ送信・保存しません。一般公開版は基本機能を無料で提供する方針です。現在のクローズドテストには、将来の提供方法を検証するための試験機能が含まれる場合があります。</p>
 
         <h2 id="data">2. 収集する情報</h2>
         <h3>2.1 位置情報</h3>
         <ul><li>登録地点への接近を検知するため、バックグラウンドを含む位置情報へのアクセス許可を求めます。</li><li>ジオフェンス判定はOSが提供する機能によって端末内で行います。</li><li>多数登録時に監視対象を選ぶため現在地を一時的に取得する場合も、計算は端末内で行います。</li><li>位置情報そのもの（緯度・経度）を本アプリのサーバーへ送信・保存することはありません。</li></ul>
-        <h3>2.2 リアルタイム情報の照合に使う情報（有料プランのみ）</h3>
-        <p>対応事業者の遅延情報を取得するため、駅・バス停への接近時に、事業者ID、停留所ID、便ID、予定発車時刻をサーバーへ送信する場合があります。緯度・経度は送信しません。これらは公共交通データとの照合にのみ利用し、氏名や連絡先とは結び付けません。</p>
-        <h3>2.3 匿名の購読状態情報（有料プランのみ）</h3>
-        <p>購読状態の管理にはRevenueCatを利用し、自動生成された匿名のApp User IDと購読状態・有効期限等を扱います。決済情報はAppleまたはGoogleが直接処理し、本アプリおよび開発者はクレジットカード情報等へアクセスしません。</p>
+        <h3>2.2 クローズドテストの試験機能で使う情報</h3>
+        <p>リアルタイム情報の照合を試験する場合、事業者ID、停留所ID、便ID、予定発車時刻をサーバーへ送信することがあります。緯度・経度は送信しません。これらは公共交通データとの照合にのみ利用し、氏名や連絡先とは結び付けません。</p>
+        <h3>2.3 クローズドテストの試験的な購読機能</h3>
+        <p>試験的な購読機能を有効にする場合、RevenueCatを利用し、自動生成された匿名のApp User IDと購読状態・有効期限等を扱います。決済情報はAppleまたはGoogleが直接処理し、本アプリおよび開発者はクレジットカード情報等へアクセスしません。</p>
         <h3>2.4 端末情報・通知権限</h3>
         <p>通知やバイブレーションのため、OSが管理する通知許可状態等をアプリ内で参照することがあります。これらを外部へ送信することはありません。</p>
         <h3>2.5 広告・行動追跡</h3>
-        <p>本アプリは広告を表示せず、利用者の行動を追跡する広告SDKや第三者解析SDKを組み込みません。</p>
+        <p>一般公開版では継続運営のため広告の導入を予定しています。本ポリシーの更新時点で、開発中のクローズドテスト版には広告SDKを組み込んでいません。利用する広告事業者、取得情報、表示場所は未定です。広告を導入する前に、本ポリシー、アプリ内の案内、ストアのデータセーフティ情報を実装内容に合わせて更新します。</p>
 
         <h2 id="purpose">3. 情報の利用目的</h2>
-        <ul><li>登録した駅・バス停への接近検知と発車通知</li><li>有料プランにおけるリアルタイム遅延情報の反映</li><li>有料プランの購読状態の確認</li><li>個人を特定しない範囲での不具合調査・改善</li></ul>
+        <ul><li>登録した駅・バス停への接近検知と発車通知</li><li>クローズドテストにおけるリアルタイム情報の照合</li><li>クローズドテストにおける購読状態の確認</li><li>個人を特定しない範囲での不具合調査・改善</li></ul>
 
         <h2 id="providers">4. 第三者への提供・業務委託先</h2>
-        <p>本アプリは、機能提供のため以下のサービスを利用します。各提供者はそれぞれのプライバシーポリシーに基づいて情報を取り扱います。</p>
-        <ul><li><strong>RevenueCat, Inc.</strong>：購読管理</li><li><strong>Google Cloud Platform（Google LLC）</strong>：バックエンドのホスティング</li><li><strong>Upstash, Inc.</strong>：公共交通データの一時キャッシュ</li><li><strong>公共交通オープンデータセンター（ODPT）</strong>：公共交通データの取得元</li><li><strong>Apple Inc. / Google LLC</strong>：アプリ配布と決済処理</li></ul>
-        <p>上記の目的以外で、利用者の情報を第三者へ販売することはありません。</p>
+        <p>本アプリは、機能提供またはクローズドテストのため以下のサービスを利用する場合があります。各提供者はそれぞれのプライバシーポリシーに基づいて情報を取り扱います。</p>
+        <ul><li><strong>RevenueCat, Inc.</strong>：クローズドテストの購読管理</li><li><strong>Google Cloud Platform（Google LLC）</strong>：バックエンドのホスティング</li><li><strong>Upstash, Inc.</strong>：公共交通データの一時キャッシュ</li><li><strong>公共交通オープンデータセンター（ODPT）</strong>：公共交通データの取得元</li><li><strong>Apple Inc. / Google LLC</strong>：アプリ配布および、試験的な購読機能を有効にした場合の決済処理</li></ul>
+        <p>広告を導入する場合は、広告事業者と取り扱う情報をここに追記します。上記の目的以外で、利用者の情報を第三者へ販売することはありません。</p>
 
         <h2 id="retention">5. 情報の保存期間</h2>
-        <p>匿名の購読状態情報は、購読が有効な間および有効期限管理に合理的に必要な期間保持します。サーバー側の公共交通データは定期的に更新し、長期保存を目的としません。</p>
+        <p>クローズドテストで扱う匿名の購読状態情報は、試験運用および有効期限管理に合理的に必要な期間保持します。サーバー側の公共交通データは定期的に更新し、長期保存を目的としません。</p>
 
         <h2 id="children">6. お子様のプライバシー</h2>
         <p>本アプリは13歳未満のお子様を主な対象としたサービスではなく、意図的に13歳未満のお子様の個人情報を収集しません。</p>
 
         <h2 id="rights">7. ユーザーの権利</h2>
-        <ul><li>位置情報の許可はOS設定からいつでも変更・取り消しできます。</li><li>有料プランの解約はApp StoreまたはGoogle Playの購読管理画面から行えます。</li><li>情報の取り扱いに関するご質問・削除等のご要望はお問い合わせ先へご連絡ください。</li></ul>
+        <ul><li>位置情報の許可はOS設定からいつでも変更・取り消しできます。</li><li>クローズドテストで試験的な購読を行った場合の解約は、App StoreまたはGoogle Playの購読管理画面から行えます。</li><li>情報の取り扱いに関するご質問・削除等のご要望はお問い合わせ先へご連絡ください。</li></ul>
 
         <h2 id="security">8. セキュリティ</h2>
         <p>通信の暗号化（HTTPS/TLS）やアクセス制御など、扱う情報の性質に応じた合理的な安全管理措置を講じます。ただし、インターネット通信における絶対的な安全性を保証するものではありません。</p>
 
         <h2 id="changes">9. 本ポリシーの変更</h2>
-        <p>法令や機能の変更に応じて本ポリシーを改定する場合があります。重要な変更は、アプリ内または本サイトでお知らせします。</p>
+        <p>法令や機能の変更に応じて本ポリシーを改定する場合があります。広告SDKの導入、広告事業者の変更、収集情報の変更など、重要な変更はアプリ内または本サイトでお知らせします。</p>
 
         <h2 id="contact">10. お問い合わせ先</h2>
         <div class="contact-card"><strong>イマクル運営</strong><br>メール：<a href="mailto:keyanbaitian6@gmail.com">keyanbaitian6@gmail.com</a></div>

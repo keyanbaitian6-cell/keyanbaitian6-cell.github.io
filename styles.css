@@ -136,6 +136,7 @@ button, input, textarea { font: inherit; }
 .section-heading.light > p { color: #b6c5df; }
 .section-dark .section-kicker { color: #75b1ff; }
 .plans-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 900px; margin: 0 auto; }
+.plans-grid.single-plan { grid-template-columns: minmax(0, 620px); justify-content: center; }
 .plan-card { position: relative; padding: 38px; color: var(--ink); background: #fff; border-radius: 28px; }
 .plan-card.premium { background: linear-gradient(155deg, #eef6ff, #fff); box-shadow: inset 0 0 0 2px #3e91ff; }
 .plan-name { color: var(--blue-700); font-size: 11px; font-weight: 900; letter-spacing: .16em; }
@@ -145,6 +146,7 @@ button, input, textarea { font: inherit; }
 .plan-card li { position: relative; padding-left: 28px; }
 .plan-card li::before { content: "✓"; position: absolute; left: 0; color: var(--blue-700); font-weight: 900; }
 .plan-badge { position: absolute; right: 24px; top: 24px; padding: 5px 11px; color: #fff; background: var(--orange); border-radius: 999px; font-size: 11px; font-weight: 900; }
+.free-note { max-width: 620px; margin: 20px auto 0; color: #c5d4eb; font-size: 13px; line-height: 1.8; }
 .coverage-panel { max-width: 1100px; margin: 24px auto 0; padding: 34px; background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .14); border-radius: 28px; }
 .coverage-heading { display: grid; grid-template-columns: 1fr 1fr; align-items: end; gap: 34px; margin-bottom: 24px; }
 .coverage-heading h3 { margin: 6px 0 0; font-size: clamp(25px, 3vw, 36px); }

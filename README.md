@@ -4,7 +4,7 @@
 
 - 公開URL: https://keyanbaitian6-cell.github.io/
 - サポート: https://keyanbaitian6-cell.github.io/support.html
-- プライバシーポリシー: https://keyanbaitian6-cell.github.io/privacy.html
+- プライバシーポリシー: https://keyanbaitian6-cell.github.io/imakuru-legal/
 - 利用規約: https://keyanbaitian6-cell.github.io/terms.html
 
 ## 構成

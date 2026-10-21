@@ -16,6 +16,7 @@ main{max-width:980px;margin:auto;padding:24px 18px 48px}.hero{padding:12px 2px 2
 .character{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:15px 0;border-top:1px solid #ffffff16}.character:first-of-type{border-top:0}.char-name{font-weight:850;font-size:1.05rem}.char-stats{font-size:.83rem;color:var(--muted);margin-top:3px}.char-stats strong{color:#fff}.char-buttons{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}.char-buttons .btn{padding:8px 10px;font-size:.84rem}.progress{height:7px;border-radius:99px;background:#ffffff12;margin-top:9px;overflow:hidden}.progress i{display:block;height:100%;background:linear-gradient(90deg,#26a7b7,#70e1c1);border-radius:99px;transition:width .2s}
 .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:18px;padding-top:14px;border-top:1px solid #ffffff18}.undo-label{color:var(--muted);font-size:.82rem}.foot{color:var(--muted);font-size:.8rem;margin:16px 2px 0}.toast{position:fixed;bottom:18px;left:50%;transform:translate(-50%,20px);opacity:0;background:#202a3a;border:1px solid #59667b;padding:10px 14px;border-radius:99px;transition:.2s;pointer-events:none}.toast.show{opacity:1;transform:translate(-50%,0)}
 @media(max-width:700px){main{padding:16px 12px 32px}.grid{grid-template-columns:1fr}.wide{grid-column:auto}.card{padding:17px}.character{grid-template-columns:1fr}.char-buttons{justify-content:stretch}.char-buttons .btn{flex:1}.ref-list{grid-template-columns:1fr 1fr}.bell-actions{gap:8px}}
+.analysis-card{border-color:#655636}.model-tag{color:var(--gold);font-size:.75rem;margin-left:auto}.assumption{color:#ead7a5;background:#f3c85b0d;border-radius:10px;padding:12px;font-size:.82rem}.analysis-top{font-size:1.6rem;font-weight:850;color:var(--gold);margin:16px 0 5px}.analysis-meta{color:var(--muted);font-size:.85rem}.ranking{display:grid;gap:9px;margin:18px 0}.rank-row{display:grid;grid-template-columns:65px 1fr 64px;gap:12px;align-items:center}.rank-row .progress{margin:0;height:13px}.rank-row strong{text-align:right;font-variant-numeric:tabular-nums}.rank-row.top{color:var(--gold)}.data-scroll{overflow:auto}.model-table{border-collapse:collapse;width:100%;font-size:.85rem;min-width:490px}.model-table th,.model-table td{padding:9px;text-align:center;border-bottom:1px solid #ffffff19}.model-table caption{text-align:left;color:var(--muted);padding:8px 0}.method{margin-top:16px;font-size:.85rem;color:#bdc8d9}.method summary{cursor:pointer;color:var(--cyan);padding:10px 0}.method a{color:var(--cyan)}.formula{padding:12px;border:1px solid var(--line);border-radius:10px;line-height:1.9;overflow-wrap:anywhere}.error{color:#ff9da9}.btn:disabled{opacity:.4;cursor:default}dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:18px;max-width:520px;width:calc(100% - 24px);max-height:90vh;overflow:auto}dialog::backdrop{background:#0009}.edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}.edit-grid label{font-size:.85rem}.edit-grid input{width:100%;margin-top:5px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px;font-size:1rem}#editError{color:#ff9da9}
 </style>
 </head>
 <body>
@@ -24,7 +25,7 @@ main{max-width:980px;margin:auto;padding:24px 18px 48px}.hero{padding:12px 2px 2
 <div class="grid">
 <section class="card">
 <div class="head"><span class="icon">🔔</span><h2>下段ベルカウンター</h2></div>
-<p class="sub">通常時のゲーム数と下段ベルを記録します。</p>
+<p class="sub">通常時のゲーム数と下段ベルを記録します。ベルのボタンはゲーム数を増やしません。</p>
 <div class="bell-total">
 <div class="mini"><label>ゲーム数</label><div class="count" id="games">0</div></div>
 <div class="mini"><label>下段ベル</label><div class="count" id="bells">0</div></div>
@@ -32,7 +33,7 @@ main{max-width:980px;margin:auto;padding:24px 18px 48px}.hero{padding:12px 2px 2
 <div class="rate" id="bellRate">実測確率：<strong>—</strong></div>
 <div class="bell-actions" style="margin-top:13px">
 <button class="btn gold" data-action="game1">＋1 G</button><button class="btn gold" data-action="game10">＋10 G</button>
-<button class="btn cyan" data-action="bell">下段ベル ＋1</button><span></span>
+<button class="btn cyan" data-action="bell">下段ベル ＋1</button><button class="btn ghost" id="editCounts">数値を直接入力</button>
 </div>
 <div class="reference"><b>掲載されている下段ベル確率</b><div class="ref-list">
 <div class="ref-chip">設定1<strong>1/121.1</strong></div><div class="ref-chip">設定2<strong>1/114.4</strong></div><div class="ref-chip">設定3<strong>1/112.8</strong></div>
@@ -47,8 +48,31 @@ main{max-width:980px;margin:auto;padding:24px 18px 48px}.hero{padding:12px 2px 2
 <div class="ref-chip">無名<strong>13.4% / 17.2% / 20.9% / 21.3%</strong></div>
 <div class="ref-chip">生駒<strong>11.7% / 18.2% / 19.0% / 16.3%</strong></div>
 <div class="ref-chip">カバネ<strong>30.6% / 31.1% / 26.7% / 33.9%</strong></div>
-</div><div class="foot">各値は「推定低設定 / 設定4以上 / 設定5以上 / 設定6」の集計値です。実測との照合用で、設定を判定するものではありません。</div></div>
+</div><div class="foot">各値は「推定低設定 / 設定4以上 / 設定5以上 / 設定6」の集計値です。統合分析では上記の対応付けを仮定し、元の発光回数と単独回数から推定します。</div></div>
 </section>
+<section class="card wide analysis-card">
+<div class="head"><span class="icon">Σ</span><h2>統合分析</h2><span class="model-tag">仮定付きモデル</span></div>
+<p class="sub">下段ベルと3種類の発光回数を統合し、設定1〜6の相対的な合い方を比較します。</p>
+<p class="assumption">発光の対応付け：推定低設定 → 設定1〜3 ／ 設定4以上 → 設定4 ／ 設定5以上 → 設定5 ／ 設定6 → 設定6</p>
+<div id="analysis" aria-live="polite" aria-atomic="true"></div>
+<details class="method"><summary>計算式・仮定・参照データ</summary>
+<p>設定の事前重みはすべて1/6。ベルの設定別確率を固定値として扱い、発光率は画像の丸めた％ではなく元の「発光回数／単独回数」から計算します。</p>
+<p>参照データの単独回数を M、発光回数を H とし、一様事前分布 Beta(1,1) から α = H + 1、β = M − H + 1 と更新。自分の単独回数 n と発光回数 k を、ベータ二項予測分布で評価します。参照の標本数が少ないほど、発光率の標本誤差を広く扱います。</p>
+<div class="formula">ベル：Lᵦ(s) ∝ pₛᵇ (1 − pₛ)ᴺ⁻ᵇ<br>
+発光：Lⱼ(s) ∝ B(kⱼ + αⱼₛ, nⱼ − kⱼ + βⱼₛ) / B(αⱼₛ, βⱼₛ)<br>
+統合：Wₛ = Lᵦ(s) × L無名(s) × L生駒(s) × Lカバネ(s)<br>
+相対支持度：100 × Wₛ / Σₜ₌₁⁶ Wₜ</div>
+<p>N は通常時ゲーム数、b は下段ベル回数、pₛ は設定 s の下段ベル確率、B はベータ関数です。設定間で共通の二項係数は省略します。実装では対数で計算し、最大値を引いてから正規化します。未記録の項目は重み1として統合に影響させません。</p>
+<div class="data-scroll"><table class="model-table"><caption>発光回数 / 単独回数（写真2）</caption><thead><tr><th>種類</th><th>推定低設定</th><th>設定4以上</th><th>設定5以上</th><th>設定6</th></tr></thead><tbody>
+<tr><th>無名</th><td>234 / 1744</td><td>130 / 754</td><td>87 / 416</td><td>157 / 737</td></tr>
+<tr><th>生駒</th><td>196 / 1675</td><td>131 / 721</td><td>69 / 363</td><td>122 / 748</td></tr>
+<tr><th>カバネ</th><td>252 / 823</td><td>90 / 289</td><td>20 / 75</td><td>77 / 227</td></tr>
+</tbody></table></div>
+<p>この対応付けは利用者指定の仮定です。「設定4以上」の集計は設定4単独の測定値ではありません。推定低設定の真の設定内訳や各集計間の重複はわかりません。発光のみでは設定1〜3を区別できません。</p>
+<p>各試行と各指標を設定の条件付きで独立と仮定します。実機での独立性・集計の偏り・誤分類・区分の混在は検証できていません。ベータ二項モデルが扱うのは標本誤差で、これらの偏りまでは補正しません。支持度は採用した6モデル内での比較であり、実機の真の設定確率や的中率はわかりません。途中で設定や台を変えた記録は混ぜないでください。</p>
+<p>数値出典：利用者提供「写真1.jpg」「写真2.jpg」。原典URL・調査方法：出典不明。</p>
+<p>式の出典：<a href="https://www.itl.nist.gov/div898/handbook/eda/section3/eda366i.htm" target="_blank" rel="noopener">NIST：二項分布</a> ／ <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.betabinom.html" target="_blank" rel="noopener">SciPy公式：ベータ二項分布</a></p>
+</details></section>
 <section class="card wide">
 <div class="head"><span class="icon" style="background:#6bd7a21c;color:var(--green)">↶</span><h2>記録の操作</h2></div>
 <div class="toolbar" style="border:0;margin:0;padding:0"><span class="undo-label" id="undoLabel">記録はこの端末のブラウザーに保存されます。</span><div class="buttons"><button class="btn ghost" id="undo">ひとつ戻す</button><button class="btn ghost" id="reset">全記録をリセット</button></div></div>
@@ -56,25 +80,199 @@ main{max-width:980px;margin:auto;padding:24px 18px 48px}.hero{padding:12px 2px 2
 </section>
 </div>
 <footer class="foot">数字は実戦記録と掲載値の比較用です。記録はこのブラウザー内に保存され、他の端末とは共有されません。</footer>
+<p class="foot" id="storageStatus" role="status"></p>
+<dialog id="editDialog"><form id="editForm">
+<h2>記録を直接入力</h2><p class="sub">ゲーム数や記録済みの回数をまとめて修正できます。</p>
+<div class="edit-grid"><label>通常時ゲーム数<input name="games" type="number" inputmode="numeric" min="0" max="10000000" step="1" required></label><label>下段ベル回数<input name="bells" type="number" inputmode="numeric" min="0" max="10000000" step="1" required></label></div>
+<div class="edit-grid"><label>無名・単独回数<input name="unaTotal" type="number" inputmode="numeric" min="0" max="10000000" step="1" required></label><label>無名・発光回数<input name="unaLit" type="number" inputmode="numeric" min="0" max="10000000" step="1" required></label>
+<label>生駒・単独回数<input name="ikoTotal" type="number" inputmode="numeric" min="0" max="10000000" step="1" required></label><label>生駒・発光回数<input name="ikoLit" type="number" inputmode="numeric" min="0" max="10000000" step="1" required></label>
+<label>カバネ・単独回数<input name="kabTotal" type="number" inputmode="numeric" min="0" max="10000000" step="1" required></label><label>カバネ・発光回数<input name="kabLit" type="number" inputmode="numeric" min="0" max="10000000" step="1" required></label></div>
+<p id="editError" role="alert"></p><div class="buttons"><button type="submit" class="btn cyan">保存して再計算</button><button type="button" class="btn ghost" id="cancelEdit">キャンセル</button></div>
+</form></dialog>
 </main><div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
-const initial={games:0,bells:0,una:{total:0,lit:0},iko:{total:0,lit:0},kab:{total:0,lit:0},history:[]};
-let state=load();
-function load(){try{const x=JSON.parse(localStorage.getItem('kabaneri-counter-v2'));return x&&typeof x==='object'?{...initial,...x,history:Array.isArray(x.history)?x.history:[]}:structuredClone(initial)}catch{return structuredClone(initial)}}
-function save(){localStorage.setItem('kabaneri-counter-v2',JSON.stringify(state));render()}
-function change(key,delta){if(key.includes('.')){const [group,field]=key.split('.');state[group][field]=Math.max(0,(Number(state[group][field])||0)+delta)}else state[key]=Math.max(0,(Number(state[key])||0)+delta)}
-function record(label,changes){for(const [key,delta] of Object.entries(changes))change(key,delta);state.history.push({label,changes});if(state.history.length>300)state.history.shift();save();toast(label)}
+
+// Independent statistical model. Reference entries are [lit, total].
+const BELL_DENOMINATORS=[121.1,114.4,112.8,106.2,104.2,99.1];
+const REFERENCE={
+ una:[[234,1744],[130,754],[87,416],[157,737]],
+ iko:[[196,1675],[131,721],[69,363],[122,748]],
+ kab:[[252,823],[90,289],[20,75],[77,227]]
+};
+const GROUP_FOR_SETTING=[0,0,0,1,2,3];
 const names={una:'無名',iko:'生駒',kab:'カバネ'};
-function render(){document.querySelector('#games').textContent=state.games;document.querySelector('#bells').textContent=state.bells;let rate='—';if(state.games>0){rate=state.bells===0?'0%':'1/'+(state.games/state.bells).toFixed(1)}document.querySelector('#bellRate').innerHTML='実測確率：<strong>'+rate+'</strong>'+(state.bells>state.games?' <span style="color:#ff8eb2">ベル数がゲーム数を超えています</span>':'');
-document.querySelector('#characters').innerHTML=Object.entries(names).map(([key,name])=>{const x=state[key]||{total:0,lit:0},pct=x.total?(x.lit/x.total*100):0;return '<div class="character"><div><div class="char-name">'+name+'</div><div class="char-stats">単独 <strong>'+x.total+'</strong> 回　発光 <strong>'+x.lit+'</strong> 回　発光率 <strong>'+(x.total?pct.toFixed(1)+'%':'—')+'</strong></div><div class="progress"><i style="width:'+Math.min(100,pct)+'%"></i></div></div><div class="char-buttons"><button class="btn pink" data-action="lit-'+key+'">発光あり ＋1</button><button class="btn" data-action="dark-'+key+'">発光なし ＋1</button></div></div>'}).join('');
-document.querySelector('#undoLabel').textContent=state.history.length?'直前の操作：'+state.history[state.history.length-1].label:'記録はこの端末のブラウザーに保存されます。';
-document.querySelector('#undo').disabled=!state.history.length}
-document.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',()=>{const a=btn.dataset.action;if(a==='game1')record('ゲーム数 +1',{games:1});if(a==='game10')record('ゲーム数 +10',{games:10});if(a==='bell')record('下段ベル +1',{bells:1});if(a.startsWith('lit-')){const k=a.slice(4);record(names[k]+' 発光あり',{[k+'.total']:1,[k+'.lit']:1})}if(a.startsWith('dark-')){const k=a.slice(5);record(names[k]+' 発光なし',{[k+'.total']:1})}}));
-function applyChange(key,delta){if(key.includes('.')){const [group,field]=key.split('.');state[group][field]=Math.max(0,(Number(state[group][field])||0)+delta)}else change(key,delta)}
-document.querySelector('#undo').addEventListener('click',()=>{const last=state.history.pop();if(!last)return;for(const [key,delta] of Object.entries(last.changes))applyChange(key,-delta);save();toast('直前の操作を取り消しました')});
-document.querySelector('#reset').addEventListener('click',()=>{if(!confirm('ベルと発光の記録をすべて消します。よろしいですか？'))return;state=structuredClone(initial);save();toast('全記録をリセットしました')});
-let toastTimer;function toast(s){const el=document.querySelector('#toast');el.textContent=s;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),1300)}
+const COUNT_LIMIT=10000000;
+function blankState(){return {games:0,bells:0,una:{total:0,lit:0},iko:{total:0,lit:0},kab:{total:0,lit:0},history:[]}}
+function validCount(x){return Number.isSafeInteger(x)&&x>=0&&x<=COUNT_LIMIT}
+function validationError(s){
+ if(!validCount(s.games)||!validCount(s.bells))return 'ゲーム数・ベル回数は0〜1,000万の整数で入力してください。';
+ if(s.bells>s.games)return 'ベル回数がゲーム数を超えています。ゲーム数を入力・修正してください。';
+ for(const key of Object.keys(names)){
+  const v=s[key];
+  if(!v||!validCount(v.total)||!validCount(v.lit))return names[key]+'の回数は0〜1,000万の整数で入力してください。';
+  if(v.lit>v.total)return names[key]+'の発光回数が単独回数を超えています。';
+ }
+ return '';
+}
+function logGamma(z){
+ const c=[676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+ z-=1;let x=0.99999999999980993;
+ for(let i=0;i<c.length;i++)x+=c[i]/(z+i+1);
+ const t=z+7.5;
+ return 0.9189385332046727+(z+0.5)*Math.log(t)-t+Math.log(x);
+}
+function logBeta(a,b){return logGamma(a)+logGamma(b)-logGamma(a+b)}
+function logPredictive(n,k,h,m){
+ if(n===0)return 0;
+ const a=h+1,b=m-h+1;
+ return logBeta(a+k,b+n-k)-logBeta(a,b);
+}
+function normalize(logs){
+ const mx=Math.max(...logs),v=logs.map(x=>Math.exp(x-mx)),sum=v.reduce((a,b)=>a+b,0);
+ return v.map(x=>x/sum);
+}
+function analyze(s){
+ const error=validationError(s);if(error)return {error};
+ const hasBell=s.games>0,hasLight=Object.keys(names).some(k=>s[k].total>0);
+ if(!hasBell&&!hasLight)return {empty:true};
+ const bell=BELL_DENOMINATORS.map(d=>s.bells*Math.log(1/d)+(s.games-s.bells)*Math.log1p(-1/d));
+ const light=GROUP_FOR_SETTING.map(g=>Object.keys(names).reduce((sum,key)=>{
+  const [h,m]=REFERENCE[key][g],v=s[key];return sum+logPredictive(v.total,v.lit,h,m);
+ },0));
+ const logs=bell.map((x,i)=>x+light[i]);
+ const weights=normalize(logs);
+ const ranked=logs.map((v,i)=>i).sort((a,b)=>logs[b]-logs[a]);
+ const winners=ranked.filter(i=>Math.abs(logs[i]-logs[ranked[0]])<1e-8);
+ return {hasBell,hasLight,logs,weights,bellWeights:normalize(bell),lightWeights:normalize(light),ranked,winners,logRatio:logs[ranked[0]]-logs[ranked[1]]};
+}
+
+const STORAGE_KEY='kabaneri-counter-v2';
+let storageWarning='',state=load();
+function load(){
+ try{
+  const saved=JSON.parse(localStorage.getItem(STORAGE_KEY));
+  if(!saved)return blankState();
+  if(typeof saved!=='object'||Array.isArray(saved))throw new Error('invalid state');
+  const fresh=blankState();
+  return {games:saved.games??0,bells:saved.bells??0,
+   una:{...fresh.una,...saved.una},iko:{...fresh.iko,...saved.iko},kab:{...fresh.kab,...saved.kab},
+   history:Array.isArray(saved.history)?saved.history:[]};
+ }catch{
+  storageWarning='保存データを読み込めませんでした。必要な記録を確認してから入力してください。';
+  return blankState();
+ }
+}
+function save(){
+ try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));storageWarning=''}
+ catch{storageWarning='ブラウザーに保存できません。現在の記録はページを閉じると失われる可能性があります。'}
+ render();
+}
+const allowedPaths=['games','bells','una.total','una.lit','iko.total','iko.lit','kab.total','kab.lit'];
+function valueAt(s,path){const [a,b]=path.split('.');return b?s[a][b]:s[a]}
+function change(path,delta){
+ const [a,b]=path.split('.');
+ if(b)state[a][b]+=delta;else state[a]+=delta;
+}
+function record(label,changes){
+ for(const [path,delta] of Object.entries(changes)){
+  if(!allowedPaths.includes(path)||!Number.isSafeInteger(delta)||!validCount(valueAt(state,path)+delta)){
+   toast('回数を直接入力で確認してください。');return;
+  }
+ }
+ for(const [path,delta] of Object.entries(changes))change(path,delta);
+ state.history.push({label,changes});if(state.history.length>300)state.history.shift();
+ save();toast(label);
+}
+function percent(p){const v=100*p;return v>0&&v<0.1?'0.1%未満':v>99.9?'99.9%超':v.toFixed(1)+'%'}
+function renderAnalysis(){
+ const el=document.querySelector('#analysis'),r=analyze(state);
+ if(r.error){el.innerHTML='<p class="error"></p>';el.querySelector('p').textContent=r.error;return;}
+ if(r.empty){el.innerHTML='<div class="analysis-top">記録を始めると分析します</div><p class="analysis-meta">未記録のため、最も近い設定はまだ選びません。</p>';return;}
+ const title=r.winners.length===6?'設定間の差はありません':r.winners.length>1?'同率候補：設定'+r.winners.map(i=>i+1).join('・'):'この仮定で最も近い：設定'+(r.ranked[0]+1);
+ const ratio=r.logRatio>Math.log(1000000)?'100万倍超':Math.exp(r.logRatio).toFixed(2)+'倍';
+ const sample='ベル '+state.bells+'回 / '+state.games+'G　'+Object.keys(names).map(k=>names[k]+' '+state[k].lit+'/'+state[k].total+'回').join('　');
+ el.innerHTML='<div class="analysis-top">'+title+'</div><p class="analysis-meta">1位と2位の支持比：'+ratio+'。支持比が1に近いほど差は小さくなります。</p><p class="analysis-meta">'+sample+'</p>'+
+ '<div class="ranking">'+r.ranked.map(i=>'<div class="rank-row '+(r.winners.includes(i)?'top':'')+'"><span>設定'+(i+1)+'</span><div class="progress"><i style="width:'+(r.weights[i]*100)+'%"></i></div><strong>'+percent(r.weights[i])+'</strong></div>').join('')+'</div>'+
+ '<p class="foot">相対支持度（合計100%・丸め誤差あり）。選択した仮定の中での順位で、実際にその設定である確率を保証する数字ではありません。記録が少なくても順位は出ます。</p>'+
+ '<div class="data-scroll"><table class="model-table"><caption>要素別の比較（各列の合計100%）</caption><thead><tr><th>候補</th><th>ベルのみ</th><th>発光のみ</th><th>統合</th></tr></thead><tbody>'+
+ r.ranked.map(i=>'<tr><th>設定'+(i+1)+'</th><td>'+(r.hasBell?percent(r.bellWeights[i]):'未記録')+'</td><td>'+(r.hasLight?percent(r.lightWeights[i]):'未記録')+'</td><td>'+percent(r.weights[i])+'</td></tr>').join('')+'</tbody></table></div>'+
+ (!r.hasBell?'<p class="foot">ベル未記録：発光のみで比較しています。設定1〜3の発光モデルは共通です。</p>':'')+
+ (!r.hasLight?'<p class="foot">発光未記録：ベルのみで比較しています。</p>':'');
+}
+function render(){
+ document.querySelector('#games').textContent=state.games;
+ document.querySelector('#bells').textContent=state.bells;
+ let rate='—';
+ if(validCount(state.games)&&validCount(state.bells)&&state.games>0&&state.bells<=state.games)rate=state.bells===0?'0回（未出現）':'1/'+(state.games/state.bells).toFixed(1);
+ document.querySelector('#bellRate').textContent='実測確率：'+rate;
+ document.querySelector('#characters').innerHTML=Object.entries(names).map(([key,name])=>{
+  const x=state[key],valid=validCount(x.total)&&validCount(x.lit)&&x.lit<=x.total,pct=valid&&x.total?x.lit/x.total*100:0;
+  return '<div class="character"><div><div class="char-name">'+name+'</div><div class="char-stats">単独 <strong id="'+key+'Total"></strong> 回　発光 <strong id="'+key+'Lit"></strong> 回　発光率 <strong>'+(valid&&x.total?pct.toFixed(1)+'%':'—')+'</strong></div><div class="progress"><i style="width:'+pct+'%"></i></div></div><div class="char-buttons"><button class="btn pink" data-action="lit-'+key+'">発光あり ＋1</button><button class="btn" data-action="dark-'+key+'">発光なし ＋1</button></div></div>';
+ }).join('');
+ for(const key of Object.keys(names)){
+  document.querySelector('#'+key+'Total').textContent=state[key].total;
+  document.querySelector('#'+key+'Lit').textContent=state[key].lit;
+ }
+ document.querySelector('#undoLabel').textContent=state.history.length?'直前の操作：'+state.history[state.history.length-1].label:'記録はこの端末のブラウザーに保存されます。';
+ document.querySelector('#undo').disabled=!state.history.length;
+ document.querySelector('#storageStatus').textContent=storageWarning;
+ renderAnalysis();
+}
+// Delegation keeps newly rendered character buttons active after every update.
+document.addEventListener('click',event=>{
+ const button=event.target.closest('[data-action]');if(!button)return;
+ const a=button.dataset.action;
+ if(a==='game1')record('ゲーム数 +1',{games:1});
+ else if(a==='game10')record('ゲーム数 +10',{games:10});
+ else if(a==='bell')record('下段ベル +1',{bells:1});
+ else{
+  const [type,key]=a.split('-');
+  if(!Object.hasOwn(names,key)||!['lit','dark'].includes(type))return;
+  const changes={[key+'.total']:1};
+  if(type==='lit')changes[key+'.lit']=1;
+  record(names[key]+(type==='lit'?' 発光あり':' 発光なし'),changes);
+ }
+});
+document.querySelector('#undo').addEventListener('click',()=>{
+ const last=state.history[state.history.length-1];if(!last)return;
+ if(!last.changes||typeof last.changes!=='object'||Object.entries(last.changes).some(([path,d])=>!allowedPaths.includes(path)||!Number.isSafeInteger(d)||!validCount(valueAt(state,path)-d))){
+  toast('この履歴は取り消せません。直接入力で修正できます。');return;
+ }
+ state.history.pop();for(const [path,delta] of Object.entries(last.changes))change(path,-delta);
+ save();toast('直前の操作を取り消しました');
+});
+document.querySelector('#reset').addEventListener('click',()=>{
+ if(!confirm('ベルと発光の記録をすべて消します。よろしいですか？'))return;
+ state=blankState();save();toast('全記録をリセットしました');
+});
+const dialog=document.querySelector('#editDialog'),form=document.querySelector('#editForm');
+const fields={games:'games',bells:'bells',unaTotal:'una.total',unaLit:'una.lit',ikoTotal:'iko.total',ikoLit:'iko.lit',kabTotal:'kab.total',kabLit:'kab.lit'};
+document.querySelector('#editCounts').addEventListener('click',()=>{
+ for(const [name,path] of Object.entries(fields))form.elements.namedItem(name).value=valueAt(state,path);
+ document.querySelector('#editError').textContent='';dialog.showModal();
+});
+document.querySelector('#cancelEdit').addEventListener('click',()=>dialog.close());
+form.addEventListener('submit',event=>{
+ event.preventDefault();const next=blankState();
+ for(const [name,path] of Object.entries(fields)){
+  const input=form.elements.namedItem(name),v=input.value.trim()===''?NaN:Number(input.value),[a,b]=path.split('.');
+  if(b)next[a][b]=v;else next[a]=v;
+ }
+ const error=validationError(next);if(error){document.querySelector('#editError').textContent=error;return;}
+ if(validationError(state)){
+  state={...next,history:[]};save();toast('記録を修正しました');
+ }else{
+  const changes=Object.fromEntries(allowedPaths.map(path=>[path,valueAt(next,path)-valueAt(state,path)]).filter(([,d])=>d!==0));
+  if(Object.keys(changes).length)record('数値を直接入力',changes);
+ }
+ dialog.close();
+});
+let toastTimer;function toast(s){
+ const el=document.querySelector('#toast');el.textContent=s;el.classList.add('show');
+ clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),1300);
+}
 render();
+
 </script>
 </body>
 </html>

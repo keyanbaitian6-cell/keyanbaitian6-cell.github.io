@@ -22,6 +22,8 @@ main{max-width:980px;margin:auto;padding:24px 18px 48px}.hero{padding:12px 2px 2
 .edit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 .edit-grid input{min-width:0}.toolbar{flex-wrap:wrap}
 #editForm fieldset{min-width:0;margin:0;border:1px solid var(--line);border-radius:10px}
+.method summary,.edit-grid input{min-height:44px}
+#editCzFields{display:grid;gap:10px}
 .cz-table{min-width:0;table-layout:fixed}
 .cz-table th,.cz-table td{padding:8px 4px;overflow-wrap:anywhere}
 .cz-table small{display:block;color:var(--muted)}
@@ -126,8 +128,8 @@ main{max-width:980px;margin:auto;padding:24px 18px 48px}.hero{padding:12px 2px 2
 <label>生駒・単独回数<input name="ikoTotal" type="number" inputmode="numeric" min="0" max="10000000" step="1" required></label><label>生駒・発光回数<input name="ikoLit" type="number" inputmode="numeric" min="0" max="10000000" step="1" required></label>
 <label>カバネ・単独回数<input name="kabTotal" type="number" inputmode="numeric" min="0" max="10000000" step="1" required></label><label>カバネ・発光回数<input name="kabLit" type="number" inputmode="numeric" min="0" max="10000000" step="1" required></label></div>
 <div class="edit-grid"><label>ベル計測G（空欄は未確認）<input name="bellGames" type="number" inputmode="numeric" min="0" max="10000000" step="1"></label></div>
-<p class="sub">以前のベルを分析に使う場合は、実際に数えたGを入力します。分からないときは空欄で保存できます。</p>
-<fieldset><legend>CZ当選ポイントの件数</legend><div class="edit-grid" id="editCzFields"></div></fieldset>
+<p class="sub">全ゲームでベルを数えた場合は、ベル計測Gに通常時ゲーム数と同じ値を入力してください。一部だけ数えた場合は、そのG数を入力します。分からないときは空欄で保存できます。</p>
+<div id="editCzFields" role="group" aria-label="CZ当選ポイントの件数"></div>
 <p id="editError" role="alert"></p><div class="buttons"><button type="submit" class="btn cyan">保存して再計算</button><button type="button" class="btn ghost" id="cancelEdit">キャンセル</button></div>
 </form></dialog>
 </main><div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -163,7 +165,7 @@ function logBinomial(total, hits, rate) {
  return hits * Math.log(rate) + (total - hits) * Math.log1p(-rate);
 }
 function analyze(s){
- const hasBell=s.bellGames>0,hasLight=Object.keys(CHARACTERS).some(k=>s[k].total>0);
+ const hasBell=s.bellGames>0 && s.bells<=s.bellGames,hasLight=Object.keys(CHARACTERS).some(k=>s[k].total>0);
  if(!hasBell&&!hasLight)return {empty:true};
  const bell=BELL_DENOMINATORS.map(d=>hasBell?logBinomial(s.bellGames,s.bells,1/d):0);
  const light=GROUP_FOR_SETTING.map(g=>Object.keys(CHARACTERS).reduce((sum,key)=>{

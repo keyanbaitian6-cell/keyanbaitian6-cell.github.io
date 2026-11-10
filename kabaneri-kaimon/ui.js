@@ -2,6 +2,8 @@ const $ = selector => document.querySelector(selector);
 let state = emptyData(), currentRecord, storageResult = {};
 let storageWarning = '記録を読み込んでいます。';
 let editRevision, editTracking, toastTimer, channel;
+let queued = Promise.resolve(), queuedCount = 0, queuedRevision;
+const owns = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 try {
  channel = new BroadcastChannel('kabaneri-kaimon-records');
  channel.onmessage = () => refreshRecords();
@@ -31,23 +33,44 @@ function acceptResult(result) {
  if (result.problem) storageWarning = '保存記録を確認できません。控えを保存して確認してください。';
  else if (result.legacyChanged) storageWarning = '旧版でも記録が変更されています。控えを保存し、旧版のタブを閉じて再開してください。';
  else if (result.repaired) storageWarning = '一部の履歴を読み込めませんでした。正常な末尾の操作だけ取り消せます。';
- if (result.stale) toast('別の画面で更新されました。最新の記録を確認して操作し直してください。');
+ else if (result.record?.migrationIssues?.length) {
+  storageWarning = '旧記録のうち ' + result.record.migrationIssues.join('・') +
+   ' は数値を確認できませんでした。他の回数を引き継ぎ、元の記録は控えから確認できます。';
+ }
+ if (result.stale) toast('記録が更新されました。最新の記録を確認して操作し直してください。');
  if (result.error) toast(result.error);
  render();
 }
 function storageFailure() {
- storageWarning = '保存先を開けないか、保存に失敗しました。控えを保存し、空き容量やブラウザーの設定を確認してください。';
+ storageWarning = '保存に失敗しました。もう一度操作すると接続を確認します。復帰しない場合は控えを保存し、ページを読み込み直してください。';
  storageResult = {problem: 'io'};
  render();
 }
 async function refreshRecords() {
  try { acceptResult(await readRecords()); } catch { storageFailure(); }
 }
+async function ensureWritable() {
+ if (!currentRecord || storageResult.problem === 'io') await refreshRecords();
+ if (currentRecord && !storageResult.problem && !storageResult.legacyChanged) return true;
+ toast('保存状態を確認してから操作してください。');
+ return false;
+}
+function enqueueOperation(operation) {
+ if (!queuedCount) queuedRevision = currentRecord?.revision;
+ queuedCount++;
+ queued = queued.then(async () => {
+  if (!await ensureWritable()) return;
+  queuedRevision ??= currentRecord.revision;
+  await operation();
+ }).catch(storageFailure).finally(() => queuedCount--);
+}
 async function mutate(action, revision) {
  try {
   const result = await writeRecord(action, revision);
   acceptResult(result);
   if (result.problem || result.legacyChanged || result.stale || result.error) return false;
+  // 他タブの更新が間に入った場合は、取り消しなどの確認対象を進めない。
+  if (queuedCount && result.changed && result.record.revision === queuedRevision + 1) queuedRevision++;
   channel?.postMessage('changed');
   return true;
  } catch {
@@ -60,7 +83,7 @@ function appendOperation(saved, label, data) {
 }
 function record(label, update) {
  return mutate(saved => {
-  const next = structuredClone(saved.data);
+  const next = copyData(saved.data);
   update(next);
   return appendOperation(saved, label, next);
  });
@@ -112,7 +135,8 @@ function renderSensitivity() {
  $('#sensitivity').innerHTML = '<table class="model-table cz-table"><caption>発光のみ・3候補内の参考比較</caption>' +
   '<thead><tr><th>仮の候補</th><th>件数表の率を固定</th><th>追加資料の率を固定</th></tr></thead><tbody>' +
   [1, 2, 6].map((setting, i) => '<tr><th>設定' + setting + '</th><td>' +
-   percent(oldWeights[i]) + '</td><td>' + percent(newWeights[i]) + '</td></tr>').join('') + '</tbody></table>';
+   percent(oldWeights[i]) + '</td><td>' + percent(newWeights[i]) + '</td></tr>').join('') +
+  '</tbody></table><p class="foot">件数表では設定1・2を同じ「推定低設定」の率で比較しています。</p>';
 }
 function renderCz() {
  const columns = [state.cz.una, state.cz.iko,
@@ -132,10 +156,16 @@ function renderCz() {
 function render() {
  $('#games').textContent = state.games;
  $('#bells').textContent = state.bells;
- $('#bellRate').textContent = state.bellGames === null ?
-  'ベル計測Gは未確認です。数値を直接入力して確認できます。' :
-  'ベル計測 ' + state.bellGames + 'G・' + state.bells + '回' +
-  (state.bellGames ? '　' + (state.bells ? '1/' + (state.bellGames / state.bells).toFixed(1) : '未出現') : '');
+ if (state.bellGames === null) {
+  $('#bellRate').textContent = state.bells ?
+   'ベル計測Gは未確認です。全ゲームで数えた場合は、数値の直接入力で通常時Gと同じ値を入力してください。' : 'ベル未計測';
+ } else if (state.bells > state.bellGames) {
+  $('#bellRate').textContent = 'ベル計測 ' + state.bellGames + 'G・' + state.bells +
+   '回。計測したGを追加するとベルの分析を再開します。';
+ } else {
+  $('#bellRate').textContent = 'ベル計測 ' + state.bellGames + 'G・' + state.bells + '回' +
+   (state.bellGames ? '　' + (state.bells ? '1/' + (state.bellGames / state.bells).toFixed(1) : '未出現') : '');
+ }
  $('#trackBell').textContent = state.trackingBell ? 'ベル計測を一時停止' :
   state.bellGames === null ? 'ベル計測を開始' : 'ベル計測を再開';
  $('[data-action="bell"]').disabled = !state.trackingBell || !currentRecord;
@@ -147,13 +177,13 @@ function render() {
   $('#' + key + 'Progress').style.width = (value.total ? 100 * value.lit / value.total : 0) + '%';
  }
  const history = currentRecord?.history ?? [];
- $('#undoLabel').textContent = history.length ? '直前の操作 ' + history.at(-1).label : '記録はこのブラウザーに保存されます。';
+ $('#undoLabel').textContent = history.length ? '直前の操作 ' + history[history.length - 1].label : '記録はこのブラウザーに保存されます。';
  $('#undo').disabled = !history.length;
  $('#storageStatus').textContent = storageWarning;
  $('#backupRecords').hidden = !currentRecord && !storageResult.backup;
- $('#recoverRecords').hidden = !storageResult.legacyChanged && storageResult.problem !== 'legacy';
+ $('#recoverRecords').hidden = !storageResult.legacyChanged && !['legacy', 'damaged'].includes(storageResult.problem);
  $('#recoverRecords').textContent = storageResult.legacyChanged ?
-  '控えを確認して現在の記録で再開' : '旧記録を保管して新しく始める';
+  '控えを確認して現在の記録で再開' : '読めない記録を保管して新しく始める';
  renderAnalysis();
  renderCz();
 }
@@ -172,15 +202,15 @@ $('#czButtons').innerHTML = Object.entries(CZ_CHARACTERS).map(([key, name]) =>
  '<button class="btn cyan" data-action="cz-' + key + '-' + i + '" aria-label="' + name + ' CZ ' +
  label + 'を1件追加">' + label + ' ＋1</button>').join('') + '</div></div>').join('');
 
-document.addEventListener('click', async event => {
+document.addEventListener('click', event => {
  const button = event.target.closest('[data-action]');
  if (!button) return;
- if (!currentRecord || storageResult.problem || storageResult.legacyChanged) {
-  toast('保存状態を確認してから操作してください。');
-  return;
- }
- const action = button.dataset.action, [kind, key, bucket] = action.split('-');
- if (kind === 'cz' && Object.hasOwn(CZ_CHARACTERS, key) && /^[012]$/.test(bucket)) {
+ const action = button.dataset.action;
+ enqueueOperation(() => applyCounterAction(action));
+});
+async function applyCounterAction(action) {
+ const [kind, key, bucket] = action.split('-');
+ if (kind === 'cz' && owns(CZ_CHARACTERS, key) && /^[012]$/.test(bucket)) {
   await record(CZ_CHARACTERS[key] + ' CZ ' + CZ_BUCKETS[Number(bucket)], next => next.cz[key][bucket]++);
  } else if (action === 'track-bell') {
   if (state.bellGames === null && state.bells > 0) {
@@ -189,7 +219,7 @@ document.addEventListener('click', async event => {
   }
   await mutate(saved => appendOperation(saved, 'ベルの計測状態を変更',
    {...saved.data, trackingBell: !saved.data.trackingBell, bellGames: saved.data.bellGames ?? 0}),
-  currentRecord.revision);
+  queuedRevision);
  } else if (action === 'game1' || action === 'game10') {
   const delta = action === 'game1' ? 1 : 10, tracking = state.trackingBell;
   await mutate(saved => {
@@ -202,36 +232,35 @@ document.addEventListener('click', async event => {
   await mutate(saved => saved.data.trackingBell ?
    appendOperation(saved, '下段ベル +1', {...saved.data, bells: saved.data.bells + 1}) :
     {error: 'ベル計測を再開してから追加してください。'});
- } else if (['lit', 'dark'].includes(kind) && Object.hasOwn(CHARACTERS, key)) {
+ } else if (['lit', 'dark'].includes(kind) && owns(CHARACTERS, key)) {
   await record(CHARACTERS[key] + (kind === 'lit' ? ' 発光あり' : ' 発光なし'), next => {
    next[key].total++;
    if (kind === 'lit') next[key].lit++;
   });
  }
-});
+}
 $('#undo').addEventListener('click', () => {
- if (!currentRecord) return;
- mutate(saved => {
-  const last = saved.history.at(-1);
+ enqueueOperation(() => mutate(saved => {
+  const last = saved.history[saved.history.length - 1];
   return last ? {data: last.before, history: saved.history.slice(0, -1)} : undefined;
- }, currentRecord.revision);
+ }, queuedRevision));
 });
 $('#reset').addEventListener('click', () => {
  if (!currentRecord || !confirm('ベル・発光・CZの記録と取り消し履歴をすべて消します。よろしいですか？')) return;
- mutate(() => ({data: emptyData(), history: []}), currentRecord.revision);
+ const revision = currentRecord.revision;
+ enqueueOperation(() => mutate(() => ({data: emptyData(), history: [], migrationIssues: []}), revision));
 });
 
 const dialog = $('#editDialog'), form = $('#editForm');
 const fields = {games: 'games', bells: 'bells', unaTotal: 'una.total', unaLit: 'una.lit',
  ikoTotal: 'iko.total', ikoLit: 'iko.lit', kabTotal: 'kab.total', kabLit: 'kab.lit'};
 $('#editCzFields').innerHTML = Object.entries(CZ_CHARACTERS).map(([key, name]) =>
- CZ_BUCKETS.map((label, i) => '<label>' + name + ' ' + label + '<input name="cz' + key + i +
- '" type="number" inputmode="numeric" min="0" max="10000000" step="1" required></label>').join('')).join('');
-function openEditor(czFocus) {
- if (!currentRecord || storageResult.problem || storageResult.legacyChanged) {
-  toast('保存状態を確認してください。');
-  return;
- }
+ '<fieldset><legend>' + name + 'のCZ</legend><div class="edit-grid">' +
+ CZ_BUCKETS.map((label, i) => '<label>' + label + '<input name="cz' + key + i +
+ '" type="number" inputmode="numeric" min="0" max="10000000" step="1" required></label>').join('') +
+ '</div></fieldset>').join('');
+async function openEditor(czFocus) {
+ if (!await ensureWritable()) return;
  editRevision = currentRecord.revision;
  editTracking = state.trackingBell;
  for (const [name, path] of Object.entries(fields)) {
@@ -265,6 +294,7 @@ form.addEventListener('submit', async event => {
  }
  const error = validationError(next);
  if (error) { $('#editError').textContent = error; return; }
+ if (!await ensureWritable()) { $('#editError').textContent = '保存状態を確認してください。'; return; }
  const success = await mutate(saved => appendOperation(saved, '数値を直接入力', next), editRevision);
  if (success) dialog.close();
  else $('#editError').textContent = '保存できませんでした。最新の記録を確認して開き直してください。';
@@ -276,18 +306,26 @@ function downloadBackup() {
  const url = URL.createObjectURL(blob), link = document.createElement('a');
  link.href = url;
  link.download = 'kabaneri-records-' + Date.now() + '.json';
+ document.body.appendChild(link);
  link.click();
- setTimeout(() => URL.revokeObjectURL(url), 1000);
+ link.remove();
+ setTimeout(() => URL.revokeObjectURL(url), 60_000);
  return raw;
 }
 $('#backupRecords').addEventListener('click', () => {
  try { downloadBackup(); } catch { toast('控えを保存できませんでした。'); }
 });
 $('#recoverRecords').addEventListener('click', async () => {
- if (!confirm('旧記録の控えを保存します。旧版のタブを閉じ、現在の記録で再開してよろしいですか？')) return;
+ const recovery = storageResult;
+ const message = recovery.legacyChanged ?
+  '旧記録の控えを保存します。旧版のタブを閉じ、現在の記録で再開しますか？' :
+  '読めない記録を保管し、空の記録で新しく始めますか？';
+ if (!confirm(message)) return;
  try {
   const raw = downloadBackup();
-  acceptResult(storageResult.legacyChanged ? await acknowledgeLegacy(raw) : await readRecords(raw));
+  if (recovery.legacyChanged) acceptResult(await acknowledgeLegacy(raw));
+  else if (recovery.problem === 'damaged') acceptResult(await recoverDamaged(recovery.backup, raw));
+  else acceptResult(await readRecords(raw));
   channel?.postMessage('changed');
  } catch { storageFailure(); }
 });

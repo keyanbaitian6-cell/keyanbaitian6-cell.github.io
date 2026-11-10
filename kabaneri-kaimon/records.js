@@ -18,6 +18,10 @@ function validCount(value) {
  return Number.isSafeInteger(value) && value >= 0 && value <= RECORD_LIMIT;
 }
 
+function copyData(data) {
+ return JSON.parse(JSON.stringify(data));
+}
+
 function validationError(data) {
  if (!data || ![data.games, data.bells].every(validCount)) {
   return '通常時G・ベル回数は0〜1,000万の整数で入力してください。';
@@ -26,8 +30,8 @@ function validationError(data) {
   return 'ベルの計測状態を確認してください。';
  }
  if (data.bellGames !== null &&
-     (!validCount(data.bellGames) || data.bellGames > data.games || data.bells > data.bellGames)) {
-  return 'ベル回数 ≦ ベル計測G ≦ 通常時Gになるように入力してください。';
+     (!validCount(data.bellGames) || data.bellGames > data.games)) {
+  return 'ベル計測Gは通常時G以下の整数で入力してください。';
  }
  for (const [key, name] of Object.entries(CHARACTERS)) {
   const value = data[key];
@@ -59,13 +63,22 @@ function validHistory(entries) {
 function legacyData(saved) {
  if (!saved || typeof saved !== 'object' || Array.isArray(saved)) throw new Error('invalid legacy data');
  const data = emptyData();
- for (const key of ['games', 'bells']) data[key] = saved[key] ?? 0;
- for (const key of Object.keys(CHARACTERS)) {
-  data[key] = {total: saved[key]?.total ?? 0, lit: saved[key]?.lit ?? 0};
+ const issues = [];
+ for (const [key, name] of [['games', '通常時G'], ['bells', '下段ベル']]) {
+  const value = saved[key] ?? 0;
+  if (validCount(value)) data[key] = value;
+  else issues.push(name);
+ }
+ for (const [key, name] of Object.entries(CHARACTERS)) {
+  const source = saved[key];
+  const total = source?.total ?? 0, lit = source?.lit ?? 0;
+  if ((source == null || (typeof source === 'object' && !Array.isArray(source))) &&
+      validCount(total) && validCount(lit) && lit <= total) {
+   data[key] = {total, lit};
+  } else issues.push(name + 'の発光記録');
  }
  // 旧版の通常時Gのうち実際にベルを数えた範囲は不明。
- if (validationError(data)) throw new Error('invalid legacy counts');
- return data;
+ return {data, issues};
 }
 
 function legacyHistory(entries, data) {
@@ -78,7 +91,7 @@ function legacyHistory(entries, data) {
       typeof entry.changes !== 'object' || Array.isArray(entry.changes)) break;
   const changes = Object.entries(entry.changes);
   if (!changes.length || changes.some(([key, delta]) => !keys.has(key) || !Number.isSafeInteger(delta))) break;
-  const before = structuredClone(after);
+  const before = copyData(after);
   for (const [key, delta] of changes) {
    const [group, field] = key.split('.');
    if (field) before[group][field] -= delta;
@@ -95,31 +108,52 @@ let connection;
 
 function openRecords() {
  if (!connection) {
-  connection = new Promise((resolve, reject) => {
+  const opening = new Promise((resolve, reject) => {
    const request = indexedDB.open(RECORD_DB, 1);
    request.onupgradeneeded = () => request.result.createObjectStore('records');
    request.onerror = () => reject(request.error);
    request.onsuccess = () => {
     const db = request.result;
+    db.onclose = () => {
+     if (connection === opening) connection = undefined;
+    };
     db.onversionchange = () => {
      db.close();
-     connection = undefined;
+     if (connection === opening) connection = undefined;
     };
     resolve(db);
    };
   }).catch(error => {
-   connection = undefined;
+   if (connection === opening) connection = undefined;
    throw error;
   });
+  connection = opening;
  }
  return connection;
 }
 
-async function recordTransaction(update) {
- const db = await openRecords();
+async function withTransaction(run) {
+ const opening = openRecords();
+ const db = await opening;
+ let tx;
+ try {
+  tx = db.transaction('records', 'readwrite');
+ } catch (error) {
+  if (error.name !== 'InvalidStateError') throw error;
+  if (connection === opening) connection = undefined;
+  tx = (await openRecords()).transaction('records', 'readwrite');
+ }
+ return run(tx);
+}
+
+function isDamaged(current) {
+ return current !== undefined && (!Number.isSafeInteger(current?.revision) ||
+  current.revision < 0 || !!validationError(current.data));
+}
+
+function recordTransaction(update, recover = false) {
  // 同じストアの書き込みトランザクション内で読み直し、更新の取りこぼしを防ぐ。
- return new Promise((resolve, reject) => {
-  const tx = db.transaction('records', 'readwrite');
+ return withTransaction(tx => new Promise((resolve, reject) => {
   const store = tx.objectStore('records');
   let result;
   let failure;
@@ -128,13 +162,13 @@ async function recordTransaction(update) {
    try {
     const current = request.result;
     const raw = localStorage.getItem(LEGACY_KEY);
-    if (current && (!Number.isSafeInteger(current.revision) || current.revision < 0 ||
-        validationError(current.data))) {
+    if (isDamaged(current) && !recover) {
      result = {problem: 'damaged', backup: JSON.stringify(current)};
      return;
     }
     const response = update(current, raw);
     result = response.result;
+    if (response.backupKey) store.add({record: current, legacyRaw: raw}, response.backupKey);
     if (response.save) store.put(response.save, 'current');
    } catch (error) {
     failure = error;
@@ -143,7 +177,7 @@ async function recordTransaction(update) {
   };
   tx.oncomplete = () => resolve(result);
   tx.onabort = () => reject(failure ?? tx.error ?? new Error('保存できませんでした'));
- });
+ }));
 }
 
 function readRecords(discardedLegacy) {
@@ -154,17 +188,17 @@ function readRecords(discardedLegacy) {
    const record = {...current, history};
    return {result: {record, legacyChanged: raw !== current.legacyRaw, repaired}};
   }
-  let data = emptyData(), history = [];
+  let data = emptyData(), history = [], issues = [];
   if (raw !== null && raw !== discardedLegacy) {
    try {
     const saved = JSON.parse(raw);
-    data = legacyData(saved);
-    history = legacyHistory(saved.history, data);
+    ({data, issues} = legacyData(saved));
+    if (!issues.length) history = legacyHistory(saved.history, data);
    } catch {
     return {result: {problem: 'legacy', backup: raw}};
    }
   }
-  const record = {revision: 0, data, history, legacyRaw: raw};
+  const record = {revision: 0, data, history, legacyRaw: raw, migrationIssues: issues};
   return {result: {record}, save: record};
  });
 }
@@ -185,7 +219,7 @@ function writeRecord(action, expectedRevision) {
   const saved = {...record, ...change, revision: current.revision + 1};
   const error = validationError(saved.data);
   if (error) return {result: {record, error}};
-  return {result: {record: saved}, save: saved};
+  return {result: {record: saved, changed: true}, save: saved};
  });
 }
 
@@ -197,4 +231,21 @@ function acknowledgeLegacy(backedUpLegacy) {
    revision: current.revision + 1, legacyRaw: raw};
   return {result: {record}, save: record};
  });
+}
+
+function recoverDamaged(backedUpRecord, backedUpLegacy) {
+ return recordTransaction((current, raw) => {
+  if (!isDamaged(current)) {
+   return {result: current ? {record: current, legacyChanged: raw !== current.legacyRaw} :
+    {problem: 'unavailable'}};
+  }
+  const backup = JSON.stringify(current);
+  if (backup !== backedUpRecord || raw !== backedUpLegacy) {
+   return {result: {problem: 'damaged', backup}};
+  }
+  const oldRevision = Number.isSafeInteger(current?.revision) ? current.revision : 0;
+  const revision = Math.max(Date.now(), oldRevision + 1);
+  const record = {revision, data: emptyData(), history: [], legacyRaw: raw};
+  return {result: {record}, save: record, backupKey: 'recovery-' + revision};
+ }, true);
 }
